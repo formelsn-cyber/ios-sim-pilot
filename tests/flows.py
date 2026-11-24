@@ -26,8 +26,10 @@ with sync_playwright() as p:
             pg.goto(href if href.startswith('http') else BASE+href, wait_until='load'); pg.wait_for_timeout(2500)
             rec(dev,'fiche: titre+prix', pg.locator('h1').count()>0 and re.search(r'\d', pg.inner_text('body')) is not None, pg.locator('h1').first.inner_text()[:60])
             bi=broken_imgs(pg); rec(dev,'fiche: images cassees', len(bi)==0, bi[:3])
-            btn=pg.locator('button:has-text("panier"), button:has-text("Commander"), button:has-text("Ajouter"), a:has-text("Ajouter au panier")')
+            btn=pg.locator('button:has-text("anier"), button:has-text("ommander"), button:has-text("Choisir"), button:has-text("evis"), a:has-text("evis"), a:has-text("Choisir"), a:has-text("ommander")')
             rec(dev,'fiche: bouton action', btn.count()>0, btn.count())
+            texts=pg.evaluate("[...document.querySelectorAll('button,a,[role=button]')].map(e=>(e.innerText||'').trim().replace(/\s+/g,' ')).filter(t=>t&&t.length<50)")
+            rec(dev,'fiche: boutons visibles', True, ' | '.join(dict.fromkeys(texts))[:900])
             pg.screenshot(path='shots/flow-%s-fiche.png'%dev.replace(' ',''))
             # tissus + recherche
             pg.goto(BASE+'/tissus/', wait_until='load'); pg.wait_for_timeout(2500)
