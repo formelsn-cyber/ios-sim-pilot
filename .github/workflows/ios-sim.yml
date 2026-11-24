@@ -14,25 +14,19 @@ jobs:
           xcrun simctl boot "$UDID"
           open -a Simulator
           xcrun simctl bootstatus "$UDID" -b
-      - name: Install idb
+      - name: Install Appium
         run: |
-          curl -sL https://github.com/facebook/idb/releases/latest/download/idb-companion.universal.tar.gz -o idbc.tgz
-          mkdir idbc && tar -xzf idbc.tgz -C idbc
-          ls -R idbc | head -20
-          IDBC=$(find idbc -name idb_companion -type f | head -1)
-          echo "IDBC=$PWD/$IDBC" >> $GITHUB_ENV
-          pip3 install --break-system-packages fb-idb
-          nohup "$PWD/$IDBC" --udid "$UDID" --grpc-port 9876 > companion.log 2>&1 &
-          sleep 8
-          idb connect localhost 9876
-          idb list-targets
+          npm install -g appium@2
+          appium driver install xcuitest
+          pip3 install --break-system-packages Appium-Python-Client
+          nohup appium --log-level info > appium.log 2>&1 &
+          sleep 10
+          curl -s http://127.0.0.1:4723/status | head -c 300
       - name: Run scenario
         run: |
           mkdir -p shots
-          xcrun simctl openurl "$UDID" "https://yombal.sn/"
-          sleep 30
-          xcrun simctl io "$UDID" screenshot shots/00-home.png
-          python3 act.py "Installer l" "Plus" || true
+          python3 act2.py || true
+          tail -40 appium.log > shots/appium-tail.log || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
