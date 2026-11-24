@@ -16,7 +16,7 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
       - name: Install Appium
         run: |
-          npm install -g appium@2
+          npm install -g appium@latest
           appium driver install xcuitest
           pip3 install --break-system-packages Appium-Python-Client
           nohup appium --log-level info > appium.log 2>&1 &
