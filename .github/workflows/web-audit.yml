@@ -1,0 +1,20 @@
+name: web-audit
+on:
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 -m pip install playwright
+          python3 -m playwright install --with-deps webkit chromium
+          mkdir -p shots
+          python3 tests/audit.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit
+          path: shots
+          retention-days: 3
