@@ -4,41 +4,29 @@ on:
 jobs:
   simulator:
     runs-on: macos-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
-      - name: Versions
-        run: |
-          sw_vers
-          xcodebuild -version
-          xcrun simctl list runtimes
+      - uses: actions/checkout@v4
       - name: Boot iPhone simulator
         run: |
-          set -x
-          UDID=$(xcrun simctl list devices available -j | python3 -c "
-          import json,sys
-          d=json.load(sys.stdin)['devices']
-          c=[]
-          for rt,devs in d.items():
-              if 'iOS' not in rt: continue
-              for x in devs:
-                  if x['name'].startswith('iPhone') and x['isAvailable']: c.append((rt,x['name'],x['udid']))
-          c.sort()
-          print(c[-1][2])
-          ")
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; c=[(rt,x['name'],x['udid']) for rt,devs in d.items() if 'iOS' in rt for x in devs if x['name'].startswith('iPhone') and x['isAvailable']]; c.sort(); print(c[-1][2])")
           echo "UDID=$UDID" >> $GITHUB_ENV
           xcrun simctl boot "$UDID"
           open -a Simulator
           xcrun simctl bootstatus "$UDID" -b
-          xcrun simctl list devices booted
-      - name: Open yombal.sn in Safari and screenshot
+      - name: Install idb
+        run: |
+          brew tap facebook/fb
+          brew install idb-companion
+          pip3 install --break-system-packages fb-idb
+          idb --help | head -3
+      - name: Run scenario
         run: |
           mkdir -p shots
           xcrun simctl openurl "$UDID" "https://yombal.sn/"
-          sleep 25
-          xcrun simctl io "$UDID" screenshot shots/01-yombal-home.png
-          xcrun simctl openurl "$UDID" "https://yombal.sn/yombal-manifest.webmanifest"
-          sleep 8
-          xcrun simctl io "$UDID" screenshot shots/02-manifest.png
+          sleep 30
+          xcrun simctl io "$UDID" screenshot shots/00-home.png
+          python3 act.py "Installer l" "Plus" || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
