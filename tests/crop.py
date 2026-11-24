@@ -24,6 +24,6 @@ with sync_playwright() as p:
     for dev in ['iPhone 15', 'iPhone SE', 'Pixel 7']:
         b = (p.webkit if 'iPhone' in dev else p.chromium).launch()
         pg = b.new_context(**p.devices[dev], locale='fr-FR').new_page()
-        pg.goto('https://yombal.sn/rejoindre/', wait_until='load'); pg.wait_for_timeout(3500)
+        pg.goto('https://yombal.sn/', wait_until='load'); pg.wait_for_timeout(3500)
         r = pg.evaluate(JS); r['device'] = dev; res.append(r); print('CROP', dev, json.dumps(r, ensure_ascii=False))
         b.close()
