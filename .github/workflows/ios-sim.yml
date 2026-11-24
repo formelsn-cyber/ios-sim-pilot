@@ -16,10 +16,16 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
       - name: Install idb
         run: |
-          brew tap facebook/fb
-          brew install idb-companion
+          curl -sL https://github.com/facebook/idb/releases/latest/download/idb-companion.universal.tar.gz -o idbc.tgz
+          mkdir idbc && tar -xzf idbc.tgz -C idbc
+          ls -R idbc | head -20
+          IDBC=$(find idbc -name idb_companion -type f | head -1)
+          echo "IDBC=$PWD/$IDBC" >> $GITHUB_ENV
           pip3 install --break-system-packages fb-idb
-          idb --help | head -3
+          nohup "$PWD/$IDBC" --udid "$UDID" --grpc-port 9876 > companion.log 2>&1 &
+          sleep 8
+          idb connect localhost 9876
+          idb list-targets
       - name: Run scenario
         run: |
           mkdir -p shots
