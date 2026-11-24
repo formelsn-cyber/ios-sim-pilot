@@ -18,14 +18,14 @@ jobs:
         run: |
           npm install -g appium@latest
           appium driver install xcuitest
-          pip3 install --break-system-packages Appium-Python-Client
+          python3 -m venv venv && ./venv/bin/pip install Appium-Python-Client
           nohup appium --log-level info > appium.log 2>&1 &
           sleep 10
           curl -s http://127.0.0.1:4723/status | head -c 300
       - name: Run scenario
         run: |
           mkdir -p shots
-          python3 act2.py || true
+          ./venv/bin/python act2.py || true
           tail -40 appium.log > shots/appium-tail.log || true
       - uses: actions/upload-artifact@v4
         if: always()
