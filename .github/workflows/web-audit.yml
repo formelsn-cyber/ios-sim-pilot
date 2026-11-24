@@ -11,7 +11,7 @@ jobs:
           python3 -m pip install playwright
           python3 -m playwright install --with-deps webkit chromium
           mkdir -p shots
-          python3 tests/audit.py
+          python3 tests/audit.py; python3 tests/flows.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
